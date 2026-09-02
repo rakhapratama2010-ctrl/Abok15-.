@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Guess The Number - Game tebak angka sederhana dan seru.">
+  <meta name="theme-color" content="#6366f1">
+  <title>Guess The Number</title>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-secondary: #1e293b;
+      --card: rgba(30, 41, 59, 0.9);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --border: rgba(255, 255, 255, 0.1);
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    body.light {
+      --bg: #eef2ff;
+      --bg-secondary: #ffffff;
+      --card: rgba(255, 255, 255, 0.95);
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: rgba(15, 23, 42, 0.1);
+      --shadow: 0 20px 60px rgba(79, 70, 229, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(99, 102, 241, 0.25), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.2), transparent 35%),
+        var(--bg);
+      transition: background 0.3s ease, color 0.3s ease;
+      overflow-x: hidden;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .container {
+      width: min(100% - 32px, 950px);
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 0;
+    }
+
+    .logo {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .theme-btn {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: var(--card);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      transition: 0.2s ease;
+    }
+
+    .theme-btn:hover {
+      transform: rotate(12deg) scale(1.05);
+    }
+
+    .screen {
+      display: none;
+      animation: fadeIn 0.35s ease;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 55px 20px 35px;
+    }
+
+    .hero .icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      background: linear-gradient(135deg, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      max-width: 560px;
+      margin: 20px auto 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .primary-btn,
+    .secondary-btn,
+    .danger-btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 22px;
+      font-weight: 800;
+      transition: 0.2s ease;
+    }
+
+    .primary-btn {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+    }
+
+    .primary-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+
+    .secondary-btn {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .secondary-btn:hover {
+      background: var(--bg-secondary);
+    }
+
+    .danger-btn {
+      background: var(--danger);
+      color: white;
+    }
+
+    .start-btn {
+      margin-top: 30px;
+      min-width: 190px;
+      font-size: 1rem;
+    }
+
+    .level-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 25px 0;
+    }
+
+    .level-card {
+      position: relative;
+      padding: 25px 20px;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: 0.25s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .level-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+
+    .level-card.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+    }
+
+    .level-card h3 {
+      margin-bottom: 8px;
+    }
+
+    .level-card p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .level-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 1.7rem;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .game-card {
+      max-width: 650px;
+      margin: 35px auto;
+      padding: 30px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 25px;
+      box-shadow: var(--shadow);
+    }
+
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+
+    .stat-box {
+      flex: 1;
+      padding: 14px;
+      background: rgba(99, 102, 241, 0.08);
+      border-radius: 14px;
+      text-align: center;
+    }
+
+    .stat-box span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 5px;
+    }
+
+    .stat-box strong {
+      font-size: 1.2rem;
+    }
+
+    .range {
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .guess-form {
+      display: flex;
+      gap: 10px;
+    }
+
+    .guess-input {
+      flex: 1;
+      min-width: 0;
+      padding: 16px;
+      border-radius: 14px;
+      border: 2px solid var(--border);
+      outline: none;
+      background: var(--bg-secondary);
+      color: var(--text);
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .guess-input:focus {
+      border-color: var(--primary);
+    }
+
+    .feedback {
+      min-height: 70px;
+      margin: 20px 0;
+      padding: 18px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-weight: 700;
+      background: rgba(148, 163, 184, 0.08);
+    }
+
+    .feedback.success {
+      background: rgba(34, 197, 94, 0.12);
+      color: var(--success);
+    }
+
+    .feedback.danger {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--danger);
+    }
+
+    .feedback.warning {
+      background: rgba(245, 158, 11, 0.12);
+      color: var(--warning);
+    }
+
+    .game-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .hint {
+      color: var(--warning);
+      text-align: center;
+      min-height: 25px;
+      margin-top: 12px;
+      font-size: 0.9rem;
+    }
+
+    .result-card {
+      max-width: 650px;
+      margin: 50px auto;
+      padding: 40px 25px;
+      text-align: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 25px;
+      box-shadow: var(--shadow);
+    }
+
+    .result-icon {
+      font-size: 4rem;
+      margin-bottom: 15px;
+    }
+
+    .result-card h2 {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+    }
+
+    .result-card p {
+      color: var(--muted);
+    }
+
+    .score-display {
+      margin: 25px 0;
+      font-size: 3rem;
+      font-weight: 900;
+    }
+
+    .score-display small {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .result-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .stats-card {
+      margin: 30px auto 60px;
+      padding: 25px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .big-stat {
+      padding: 20px 10px;
+      text-align: center;
+      border-radius: 15px;
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    .big-stat strong {
+      display: block;
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+    }
+
+    .big-stat span {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .reset-stats {
+      display: block;
+      margin: 20px auto 0;
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      padding: 20px 0 35px;
+      font-size: 0.85rem;
+    }
+
+    .confetti {
+      position: fixed;
+      top: -20px;
+      width: 10px;
+      height: 10px;
+      pointer-events: none;
+      animation: fall linear forwards;
+      z-index: 100;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 650px) {
+      .container {
+        width: min(100% - 20px, 950px);
+      }
+
+      .level-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .game-header {
+        flex-direction: column;
+      }
+
+      .guess-form {
+        flex-direction: column;
+      }
+
+      .guess-input {
+        width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .hero {
+        padding-top: 35px;
+      }
+
+      .game-card {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <header class="topbar">
+      <div class="logo">GUESS<span style="color: var(--primary);">.</span></div>
+      <button class="theme-btn" id="themeBtn" aria-label="Ubah tema">🌙</button>
+    </header>
+
+    <!-- HOME -->
+    <main id="homeScreen" class="screen active">
+
+      <section class="hero">
+        <div class="icon">🎯</div>
+        <h1>Guess The Number</h1>
+        <p>
+          Tebak angka rahasia sebelum kesempatanmu habis.
+          Semakin sedikit tebakan, semakin tinggi skor!
+        </p>
+
+        <button class="primary-btn start-btn" id="startBtn">
+          ▶ Mulai Bermain
+        </button>
+      </section>
+
+      <section class="stats-card">
+        <h2 class="section-title">📊 Statistik Kamu</h2>
+        <p class="section-subtitle">Data tersimpan otomatis di browser.</p>
+
+        <div class="stats-grid">
+          <div class="big-stat">
+            <strong id="totalGames">0</strong>
+            <span>Total Game</span>
+          </div>
+
+          <div class="big-stat">
+            <strong id="wins">0</strong>
+            <span>Menang</span>
+          </div>
+
+          <div class="big-stat">
+            <strong id="losses">0</strong>
+            <span>Kalah</span>
+          </div>
+
+          <div class="big-stat">
+            <strong id="winRate">0%</strong>
+            <span>Win Rate</span>
+          </div>
+
+          <div class="big-stat">
+            <strong id="highScore">0</strong>
+            <span>High Score</span>
+          </div>
+
+          <div class="big-stat">
+            <strong id="bestGuess">-</strong>
+            <span>Tebakan Terbaik</span>
+          </div>
+        </div>
+
+        <button class="secondary-btn reset-stats" id="resetStatsBtn">
+          Reset Statistik
+        </button>
+      </section>
+
+    </main>
+
+    <!-- LEVEL -->
+    <main id="levelScreen" class="screen">
+
+      <section style="padding: 40px 0 60px;">
+        <h2 class="section-title">Pilih Tingkat Kesulitan</h2>
+        <p class="section-subtitle">
+          Semakin sulit, semakin besar tantangannya.
+        </p>
+
+        <div class="level-grid">
+
+          <div class="level-card selected" data-level="easy">
+            <div class="level-icon">🟢</div>
+            <h3>Easy</h3>
+            <p>
+              Angka 1–50<br>
+              10 kesempatan<br>
+              Multiplier ×1
+            </p>
+          </div>
+
+          <div class="level-card" data-level="medium">
+            <div class="level-icon">🟡</div>
+            <h3>Medium</h3>
+            <p>
+              Angka 1–100<br>
+              7 kesempatan<br>
+              Multiplier ×2
+            </p>
+          </div>
+
+          <div class="level-card" data-level="hard">
+            <div class="level-icon">🔴</div>
+            <h3>Hard</h3>
+            <p>
+              Angka 1–500<br>
+              5 kesempatan<br>
+              Multiplier ×3
+            </p>
+          </div>
+
+        </div>
+
+        <div style="text-align:center;">
+          <button class="primary-btn" id="startGameBtn">
+            🎮 Mulai Game
+          </button>
+
+          <button class="secondary-btn" id="backHomeBtn" style="margin-left:8px;">
+            Kembali
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- GAME -->
+    <main id="gameScreen" class="screen">
+
+      <section class="game-card">
+
+        <div class="game-header">
+
+          <div class="stat-box">
+            <span>Kesempatan</span>
+            <strong id="attempts">0</strong>
+          </div>
+
+          <div class="stat-box">
+            <span>Skor</span>
+            <strong id="currentScore">0</strong>
+          </div>
+
+          <div class="stat-box">
+            <span>Level</span>
+            <strong id="currentLevel">Easy</strong>
+          </div>
+
+        </div>
+
+        <p class="range">
+          Tebak angka antara <strong id="minNumber">1</strong> dan
+          <strong id="maxNumber">50</strong>
+        </p>
+
+        <form class="guess-form" id="guessForm">
+          <input
+            class="guess-input"
+            id="guessInput"
+            type="number"
+            placeholder="Masukkan angka..."
+            autocomplete="off"
+            required
+          >
+
+          <button class="primary-btn" type="submit">
+            Tebak!
+          </button>
+        </form>
+
+        <div class="feedback" id="feedback">
+          Masukkan tebakan pertamamu! 🎯
+        </div>
+
+        <div class="hint" id="hint"></div>
+
+        <div class="game-actions">
+          <button class="secondary-btn" id="hintBtn">
+            💡 Petunjuk (-100)
+          </button>
+
+          <button class="secondary-btn" id="quitBtn">
+            Keluar
+          </button>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- RESULT -->
+    <main id="resultScreen" class="screen">
+
+      <section class="result-card">
+
+        <div class="result-icon" id="resultIcon">🎉</div>
+
+        <h2 id="resultTitle">Kamu Menang!</h2>
+
+        <p id="resultMessage">
+          Hebat! Kamu berhasil menemukan angka rahasia.
+        </p>
+
+        <div class="score-display">
+          <span id="finalScore">0</span>
+          <small>SKOR AKHIR</small>
+        </div>
+
+        <div class="result-buttons">
+          <button class="primary-btn" id="playAgainBtn">
+            🔄 Main Lagi
+          </button>
+
+          <button class="secondary-btn" id="homeBtn">
+            🏠 Menu Utama
+          </button>
+        </div>
+
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      Guess The Number • Dibuat dengan HTML, CSS & JavaScript
+    </footer>
+
+  </div>
+
+  <script>
+    "use strict";
+
+    /* =========================
+       KONFIGURASI GAME
+    ========================= */
+
+    const levels = {
+      easy: {
+        name: "Easy",
+        min: 1,
+        max: 50,
+        attempts: 10,
+        multiplier: 1
+      },
+
+      medium: {
+        name: "Medium",
+        min: 1,
+        max: 100,
+        attempts: 7,
+        multiplier: 2
+      },
+
+      hard: {
+        name: "Hard",
+        min: 1,
+        max: 500,
+        attempts: 5,
+        multiplier: 3
+      }
+    };
+
+    let selectedLevel = "easy";
+    let secretNumber = 0;
+    let remainingAttempts = 0;
+    let usedAttempts = 0;
+    let currentScore = 0;
+    let hintUsed = false;
+    let gameFinished = false;
+
+    /* =========================
+       ELEMENT DOM
+    ========================= */
+
+    const screens = {
+      home: document.getElementById("homeScreen"),
+      level: document.getElementById("levelScreen"),
+      game: document.getElementById("gameScreen"),
+      result: document.getElementById("resultScreen")
+    };
+
+    const startBtn = document.getElementById("startBtn");
+    const startGameBtn = document.getElementById("startGameBtn");
+    const backHomeBtn = document.getElementById("backHomeBtn");
+    const guessForm = document.getElementById("guessForm");
+    const guessInput = document.getElementById("guessInput");
+    const hintBtn = document.getElementById("hintBtn");
+    const quitBtn = document.getElementById("quitBtn");
+    const playAgainBtn = document.getElementById("playAgainBtn");
+    const homeBtn = document.getElementById("homeBtn");
+    const themeBtn = document.getElementById("themeBtn");
+    const resetStatsBtn = document.getElementById("resetStatsBtn");
+
+    const attemptsEl = document.getElementById("attempts");
+    const currentScoreEl = document.getElementById("currentScore");
+    const currentLevelEl = document.getElementById("currentLevel");
+    const minNumberEl = document.getElementById("minNumber");
+    const maxNumberEl = document.getElementById("maxNumber");
+    const feedbackEl = document.getElementById("feedback");
+    const hintEl = document.getElementById("hint");
+
+    /* =========================
+       STATISTIK
+    ========================= */
+
+    const defaultStats = {
+      totalGames: 0,
+      wins: 0,
+      losses: 0,
+      highScore: 0,
+      bestGuess: null
+    };
+
+    function getStats() {
+      try {
+        const saved = localStorage.getItem("guessTheNumberStats");
+
+        if (!saved) {
+          return { ...defaultStats };
+        }
+
+        const parsed = JSON.parse(saved);
+
+        return {
+          ...defaultStats,
+          ...parsed
+        };
+      } catch (error) {
+        return { ...defaultStats };
+      }
+    }
+
+    function saveStats(stats) {
+      try {
+        localStorage.setItem(
+          "guessTheNumberStats",
+          JSON.stringify(stats)
+        );
+      } catch (error) {
+        console.warn("LocalStorage tidak tersedia.");
+      }
+    }
+
+    function updateStatsDisplay() {
+      const stats = getStats();
+
+      const winRate = stats.totalGames > 0
+        ? Math.round((stats.wins / stats.totalGames) * 100)
+        : 0;
+
+      document.getElementById("totalGames").textContent = stats.totalGames;
+      document.getElementById("wins").textContent = stats.wins;
+      document.getElementById("losses").textContent = stats.losses;
+      document.getElementById("winRate").textContent = `${winRate}%`;
+      document.getElementById("highScore").textContent = stats.highScore;
+      document.getElementById("bestGuess").textContent =
+        stats.bestGuess === null ? "-" : stats.bestGuess;
+    }
+
+    /* =========================
+       NAVIGASI SCREEN
+    ========================= */
+
+    function showScreen(screenName) {
+      Object.values(screens).forEach(screen => {
+        screen.classList.remove("active");
+      });
+
+      screens[screenName].classList.add("active");
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    }
+
+    /* =========================
+       MEMULAI GAME
+    ========================= */
+
+    function startGame() {
+      const config = levels[selectedLevel];
+
+      secretNumber =
+        Math.floor(Math.random() * (config.max - config.min + 1))
+        + config.min;
+
+      remainingAttempts = config.attempts;
+      usedAttempts = 0;
+      currentScore = config.attempts * 100 * config.multiplier;
+      hintUsed = false;
+      gameFinished = false;
+
+      currentLevelEl.textContent = config.name;
+      minNumberEl.textContent = config.min;
+      maxNumberEl.textContent = config.max;
+
+      updateGameUI();
+
+      feedbackEl.textContent = "Masukkan tebakan pertamamu! 🎯";
+      feedbackEl.className = "feedback";
+      hintEl.textContent = "";
+
+ 
